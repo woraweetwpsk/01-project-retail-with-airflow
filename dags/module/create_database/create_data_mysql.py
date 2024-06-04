@@ -27,7 +27,7 @@ mycursor = mydb.cursor()
 # create table
 mycursor.execute("CREATE TABLE customers (customer_id INT PRIMARY KEY, firstname VARCHAR(50),lastname VARCHAR(50), email VARCHAR(100), phone VARCHAR(20), address VARCHAR(100), province VARCHAR(50), country VARCHAR(50), zipcode VARCHAR(50))")
 
-mycursor.execute("CREATE TABLE products (product_id INT PRIMARY KEY, product_name VARCHAR(100), category VARCHAR(50), price DECIMAL(10,2), stock_quantity INT)")
+mycursor.execute("CREATE TABLE products (product_id INT PRIMARY KEY, product_name VARCHAR(100), category VARCHAR(50), price DECIMAL(10,2), stock_quantity INT, product_cost DECIMAL(10,2), product_profit DECIMAL(10,2))")
 
 mycursor.execute("CREATE TABLE sales (sale_id INT PRIMARY KEY, customer_id INT, product_id INT,quantity INT,sale_date DATE, sale_time TIME, FOREIGN KEY (customer_id) REFERENCES customers(customer_id), FOREIGN KEY (product_id) REFERENCES products(product_id))")
 
@@ -43,7 +43,7 @@ mydb.commit()
 products_data=create_data_products()
 for row_p in products_data:
     i_p = len(row_p)
-    sql_p = f"INSERT INTO products (product_id,product_name,category,price,stock_quantity) VALUES ({'%s, '* (i_p-1)}%s)"
+    sql_p = f"INSERT INTO products (product_id,product_name,category,price,stock_quantity,product_cost,product_profit) VALUES ({'%s, '* (i_p-1)}%s)"
     mycursor.execute(sql_p, tuple(row_p))
 mydb.commit()
 

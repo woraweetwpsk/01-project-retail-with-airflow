@@ -36,23 +36,28 @@ def create_data_products():
     data=[]
     for key,vals in raw_data_products.items():
         for val in vals:
-            data.append([count,key, val,float(random.randrange(20, 80,5)),random.randrange(500,1000,50)])
+            product_id = count
+            product_name = key
+            category = val
+            price = float(random.randrange(20, 80,5))
+            stock_quantity = random.randrange(500,1000,50)
+            random_percent = round(random.uniform(1.05,1.10),2)
+            product_cost = round(price/random_percent,2)
+            product_profit = round(price-product_cost,2)
+            data.append([product_id,product_name,category,price,stock_quantity,product_cost,product_profit])
             count+=1
     return data
-
 #Create Sale date
 
 def create_data_sales():
     sales_data = []
     sale_id = 1
-    year = 2024
-    month = 5
-    date = 1
-    
-    #date range 1-30
-    while date<= 30:
-        sale_date = f"{year}-{month}-{date}"
-        date+=1
+    #run date start to (today - 1 )
+    start_date = datetime.date(2024,1,1)
+    end_date = datetime.date.today() - datetime.timedelta(days = 1)
+    dif_day = (end_date-start_date).days
+    for i in range(dif_day):
+        sale_date = (start_date + datetime.timedelta(days = i)).strftime("%Y-%m-%d")
         #random range customers per day
         random_number_of_customers = random.randrange(20,100)
         
@@ -86,10 +91,3 @@ def create_data_sales():
             sale_id+=1
     
     return sales_data
-
-    
-    
-
-        
-
-

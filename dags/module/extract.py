@@ -54,27 +54,33 @@ def download_full_load():
         sales = pd.read_sql("SELECT * FROM sales",mydb).set_index(["sale_id"])
 
     #change sale_date type Object to datetime
-    sales["sale_date"] = pd.to_datetime(sales["sale_date"])
+    # sales["sale_date"] = pd.to_datetime(sales["sale_date"])
     #chage sale_time type deltatime to Object
-    sales["sale_time"] = sales["sale_time"].apply(timedelta_to_time)
-    
+    # sales["sale_time"] = sales["sale_time"].apply(timedelta_to_time)
+    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
     #download to local file path
-    customers.to_csv(f"/opt/airflow/data/customers_rawdata.csv")
-    products.to_csv(f"/opt/airflow/data/products_rawdata.csv")
-    sales.to_csv(f"/opt/airflow/data/sales_rawdata.csv")
+    customers.to_csv(f"/opt/airflow/data/{str_datetime}_customers_rawdata.csv")
+    products.to_csv(f"/opt/airflow/data/{str_datetime}_products_rawdata.csv")
+    sales.to_csv(f"/opt/airflow/data/{str_datetime}_sales_rawdata.csv")
+    
+    #Test
+    # customers.to_csv(f"./data/customers_rawdata.csv")
+    # products.to_csv(f"./data/products_rawdata.csv")
+    # sales.to_csv(f"./data/sales_rawdata.csv")
+# download_full_load()
     
 def upload_full_load():
     config_data = read_config()
     access_key_id = config_data["access_key_id"]
     secret_access_key = config_data["secret_access_key"]
-    
-    file_name = ["customers_rawdata.csv","products_rawdata.csv","sales_rawdata.csv"]
+    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
+    file_name = [f"{str_datetime}_customers_rawdata.csv",f"{str_datetime}_products_rawdata.csv",f"{str_datetime}_sales_rawdata.csv"]
     
     for i in file_name:
         logging.basicConfig(level=logging.INFO)
         logger = logging.getLogger()
         bucket_name = "project1forairflow"
-        s3_file_key = f"rawfile/{i}"
+        s3_file_key = f"rawfile/full_load/{i}"
         file_path = f"/opt/airflow/data/{i}"
         s3 = boto3.client('s3',aws_access_key_id= access_key_id,aws_secret_access_key= secret_access_key)
         
