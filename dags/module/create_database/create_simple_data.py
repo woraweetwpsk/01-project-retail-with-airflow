@@ -59,7 +59,7 @@ def create_data_sales():
     for i in range(dif_day):
         sale_date = (start_date + datetime.timedelta(days = i)).strftime("%Y-%m-%d")
         #random range customers per day
-        random_number_of_customers = random.randrange(20,100)
+        random_number_of_customers = random.randrange(100,200)
         
         for i in range(random_number_of_customers):
             customer_id = random.randrange(1,100)
