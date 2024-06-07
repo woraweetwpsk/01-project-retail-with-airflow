@@ -13,6 +13,7 @@ def read_config():
     db_host = config.get("db", "host")
     db_user = config.get("db", "user")
     db_password = config.get("db", "password")
+    db_port = config.get("db","port")
     db_name = config.get("db","name")
     access_key_id = config.get("S3", "access_key_id")
     secret_access_key = config.get("S3","secret_access_key")
@@ -21,6 +22,7 @@ def read_config():
         "db_host": db_host,
         "db_user": db_user,
         "db_password": db_password,
+        "db_port" : db_port,
         "db_name": db_name,
         "access_key_id": access_key_id,
         "secret_access_key": secret_access_key
@@ -36,12 +38,14 @@ def download_full_load():
     db_host = config_data["db_host"]
     db_user = config_data["db_user"]
     db_password = config_data["db_password"]
+    db_port = config_data["db_port"]
     db_name = config_data["db_name"]
     
     mydb = mysql.connector.connect(
     host = db_host,
     user = db_user,
     password = db_password,
+    port = db_port,
     database = db_name
     )
 
@@ -59,9 +63,9 @@ def download_full_load():
     # sales["sale_time"] = sales["sale_time"].apply(timedelta_to_time)
     str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
     #download to local file path
-    customers.to_csv(f"/opt/airflow/data/{str_datetime}_customers_rawdata.csv")
-    products.to_csv(f"/opt/airflow/data/{str_datetime}_products_rawdata.csv")
-    sales.to_csv(f"/opt/airflow/data/{str_datetime}_sales_rawdata.csv")
+    customers.to_csv(f"/opt/airflow/data/raw/{str_datetime}_customers_rawdata.csv")
+    products.to_csv(f"/opt/airflow/data/raw/{str_datetime}_products_rawdata.csv")
+    sales.to_csv(f"/opt/airflow/data/raw/{str_datetime}_sales_rawdata.csv")
     
     #Test
     # customers.to_csv(f"./data/customers_rawdata.csv")
@@ -81,7 +85,7 @@ def upload_full_load():
         logger = logging.getLogger()
         bucket_name = "project1forairflow"
         s3_file_key = f"rawfile/full_load/{i}"
-        file_path = f"/opt/airflow/data/{i}"
+        file_path = f"/opt/airflow/data/raw/{i}"
         s3 = boto3.client('s3',aws_access_key_id= access_key_id,aws_secret_access_key= secret_access_key)
         
         try:
@@ -89,6 +93,14 @@ def upload_full_load():
             logger.info(f'File {file_path} upload to {bucket_name}/{s3_file_key}')
         except Exception as e:
             logger.error(e)
+        
+        finally:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"the file {file_path} has been delete.")
+            else:
+                print(f"the file {file_path} does not exist.")
+            
             
 
     
