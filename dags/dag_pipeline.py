@@ -1,8 +1,8 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
-from module.extract import upload_full_load,download_full_load
-# from module.transform import transform_data
+from module.extract import download_full_load,upload_full_load
+from module.transform import cleansing_data,upload_clean_data,aggregate_data,upload_aggregate_data
 
 with DAG(
     "project_retail_full_load",
@@ -21,9 +21,26 @@ with DAG(
         task_id = "upload_full_load",
         python_callable = upload_full_load
     )
-    # transform_upload_data = PythonOperator(
-    #     task_id = "transform_upload_data",
-    #     python_callable = transform_data
-    # )
     
-download_full_load >> upload_full_load
+    cleansing_data = PythonOperator(
+        task_id = "cleansing_data",
+        python_callable = cleansing_data
+    )
+    
+    upload_clean_data = PythonOperator(
+        task_id = "upload_clean_data",
+        python_callable = upload_clean_data
+    )
+    
+    aggregate_data = PythonOperator(
+        task_id = "aggregate_data",
+        python_callable = aggregate_data
+    )
+    
+    upload_aggregate_data = PythonOperator(
+        task_id = "upload_aggregate_data",
+        python_callable = upload_aggregate_data
+    )
+    
+    
+download_full_load >> upload_full_load >> cleansing_data >> upload_clean_data >>aggregate_data >> upload_aggregate_data

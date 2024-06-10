@@ -41,7 +41,7 @@ def create_data_products():
             category = val
             price = float(random.randrange(20, 80,5))
             stock_quantity = random.randrange(500,1000,50)
-            random_percent = round(random.uniform(1.05,1.10),2)
+            random_percent = round(random.uniform(1.10,1.20),2)
             product_cost = round(price/random_percent,2)
             product_profit = round(price-product_cost,2)
             data.append([product_id,product_name,category,price,stock_quantity,product_cost,product_profit])
