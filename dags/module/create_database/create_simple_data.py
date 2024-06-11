@@ -84,10 +84,42 @@ def create_data_sales():
     
     #จำนวน sale id
     number_sale=len(sales_data)
+    
     #Run เลข sale_id ใหม่ให้ตามลำดับ
-    while sale_id<=number_sale:
-        for i in sales_data:
-            i[0]=sale_id
-            sale_id+=1
+    for i in range(len(sales_data)):
+        sales_data[i][0] = sale_id + i
     
     return sales_data
+
+def input_daily_data(new_sale_id):
+    new_sales_data = []
+    date = datetime.date.today() - datetime.timedelta(days = 1)
+    random_number_of_customers = random.randrange(100,200)
+    sale_id = int(new_sale_id)
+    
+    for i in range(random_number_of_customers):
+        customer_id = random.randrange(1,100)
+        product_id = random.randrange(1,100)
+        quantity = random.randrange(1,5)
+        random_time = f"{random.randrange(8,17)}:{random.randrange(0,59)}:{random.randrange(0,59)}"
+        data_day=[sale_id,customer_id,product_id,quantity,date,random_time]
+        new_sales_data.append(data_day)
+        
+    #เรียงวันและเวลาโดยใช้ pandas Dataframe
+    cols = ['sale_id','customer_id','product_id','quantity','sale_date','sale_time']
+    df = pd.DataFrame(new_sales_data,columns=cols)
+    
+    df.sort_values(["sale_time"])
+    
+    #convert Dataframe to List
+    new_sales_data=df.values.tolist()
+    
+    #จำนวน sale id
+    number_sale=len(new_sales_data)+sale_id
+    
+    for i in range(len(new_sales_data)):
+        new_sales_data[i][0] = sale_id + i
+    
+    return new_sales_data
+    
+

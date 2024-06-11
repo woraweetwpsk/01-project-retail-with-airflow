@@ -1,6 +1,6 @@
 import pandas as pd
 import os 
-from datetime import datetime, timedelta
+import datetime
 
 from module.function import connector,upload_file_s3,file_in_path
 
@@ -15,7 +15,7 @@ def download_full_load():
     sales.to_csv(f"/opt/airflow/data/raw/sales_rawdata.csv")
 
 def upload_full_load():
-    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
+    str_datetime = str(datetime.datetime.now().strftime("%Y-%m-%d"))
     file_location = f"/opt/airflow/data/raw/"
     # files_name = [i for x in os.walk(file_location) for i in x[-1]]
     files_name = file_in_path(file_location)
@@ -37,4 +37,31 @@ def upload_full_load():
                 print(f"the file {file_name} does not exist.")
 
         
+def download_daily_data():
+    date = str(datetime.date.today() - datetime.timedelta(days = 1))
+    mydb = connector("mysql")
+    daily_sale = pd.read_sql(f"SELECT * FROM sales WHERE sale_date = '{date}'",mydb).set_index(["sale_id"])
+    
+    daily_sale.to_csv(f"/opt/airflow/data/raw/daily_sale.csv")
 
+def upload_daily_data():
+    str_datetime = str(datetime.datetime.now().strftime("%Y-%m-%d"))
+    file_location = f"/opt/airflow/data/raw/"
+    # files_name = [i for x in os.walk(file_location) for i in x[-1]]
+    files_name = file_in_path(file_location)
+    
+    bucket_name = "project1forairflow"
+    object_location = f"rawfile/daily/{str_datetime}/"
+    for file in files_name:
+        file_name = f"{file_location}{file}"
+        object_name = f"{object_location}{file}"
+        try:
+            upload_file_s3(file_name,bucket_name,object_name)
+        except Exception as e:
+            print(e)
+        finally:
+            if os.path.exists(file_name):
+                os.remove(file_name)
+                print(f"the file {file_name} has been delete.")
+            else:
+                print(f"the file {file_name} does not exist.")
