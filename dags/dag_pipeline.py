@@ -1,8 +1,9 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
+
 from module.extract import download_full_load,upload_full_load
-from dags.module.transform import cleansing_data,upload_clean_data,func_agg_data,func_upload_agg
+from module.transform import cleansing_data,upload_clean_data,func_agg_data,func_upload_agg
 
 with DAG(
     "project_retail_full_load",

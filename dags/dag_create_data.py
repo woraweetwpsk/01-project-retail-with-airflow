@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
+
 from module.create_data import create_table,create_customers_data,create_products_data,create_sales_data
 
 

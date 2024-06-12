@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils import timezone
 
 from module.extract import download_daily_data,upload_daily_data
-from dags.module.transform import cleansing_daily_data,upload_clean_data,func_agg_data,func_upload_agg
+from module.transform import cleansing_daily_data,upload_clean_data,func_agg_data,func_upload_agg
 
 
 with DAG(
