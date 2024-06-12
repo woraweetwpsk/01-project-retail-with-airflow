@@ -6,7 +6,7 @@ import mysql.connector
 import boto3
 
 
-def get_config(x):
+def get_config(name):
     #Read config
     config = configparser.ConfigParser()
     config.read(os.path.join(os.path.dirname(__file__),"config.ini"))
@@ -29,12 +29,13 @@ def get_config(x):
                    "secret_access_key" : secret_access_key
                    }
     
-    if x in config_data.keys():
-        result = config_data[x]
+    if name in config_data.keys():
+        result = config_data[name]
     else:
         pass
         
     return result
+
 
 def connector(server):
     if server == "mysql":
@@ -65,6 +66,7 @@ def connector(server):
         pass
     return result
 
+
 def execute_mysql(sql,data=None):
     mydb = connector("mysql")
     
@@ -78,6 +80,7 @@ def execute_mysql(sql,data=None):
     except Exception as e:
         print(e)
 
+
 def upload_file_s3(file_name,bucket_name,object_name):
     s3_client = connector("s3").client("s3")
     try:
@@ -85,12 +88,14 @@ def upload_file_s3(file_name,bucket_name,object_name):
         print(f"File {file_name} was uploaded to {bucket_name}/{object_name}")
     except Exception as e :
         print(e)
-    
-# #Test upload file in S3
-# file_name = os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/text.txt"))
-# object_name = "text.txt"
-# bucket_name = "project1forairflow"
-# upload_file_s3(file_name,bucket_name,object_name)
+        
+    finally:
+        if os.path.exists(file_name):
+                os.remove(file_name)
+                print(f"the file {file_name} has been delete.")
+        else:
+            print(f"the file {file_name} does not exist.")
+
 
 def read_csv_s3(bucket_name,file_path):
     s3_client = connector("s3").client("s3")
@@ -102,11 +107,6 @@ def read_csv_s3(bucket_name,file_path):
     dataframe = pd.read_csv(StringIO(object_file))
     return dataframe
 
-# #Test read File
-# bucket_name = "project1forairflow"
-# file_path = "rawfile/full_load/2024-06-07_customers_rawdata.csv"
-# x = read_csv_s3(bucket_name,file_path)
-# print(x.head(5))
 
 def file_in_path(path):
     files = []
@@ -114,6 +114,7 @@ def file_in_path(path):
         for filename in filenames:
             files.append(filename)
     return files
+
 
 def file_in_s3(bucket,path):
     s3_client = connector("s3").client("s3")
@@ -130,13 +131,20 @@ def file_in_s3(bucket,path):
     
     return file_list
 
-# #Test List file in bucket
-# bucket = "project1forairflow"
-# path = "rawfile/full_load/2024-06-10"
-# x = file_in_s3(bucket,path)
-# print(x)
 
-# bucket_name = "project1forairflow"
-# object_name = "transform/full_load/2024-06-10/combine_all_data.csv"
-# s3_client = connector("s3").client("s3")
-# s3_client.download_file(bucket_name, object_name, "data/transform/test.csv")
+def search_new_path(bucket_name,prefix):
+    s3_client = connector("s3").client("s3")
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    if 'Contents' not in response:
+        print(f"Not File or Folder in {prefix}")
+    else:
+
+        for obj in response['Contents']:
+            # Extract subfolder name from the key
+            key = obj['Key']
+            subfolder_name = key[len(prefix):].split('/')[0]
+        path = f"{prefix}{subfolder_name}"
+
+        return path
+            
+

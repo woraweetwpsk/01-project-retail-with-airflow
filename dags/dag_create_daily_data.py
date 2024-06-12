@@ -8,7 +8,7 @@ with DAG(
     "input_daily_data",
     description="daily input data",
     start_date=timezone.datetime(2024,6,10),
-    schedule_interval="20 7 * * *",
+    schedule_interval="30 7 * * *",
     catchup=False,
     tags=["retail"]
 ):

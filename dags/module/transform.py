@@ -2,27 +2,15 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from module.function import read_csv_s3,upload_file_s3,file_in_path,file_in_s3,connector
+from module.function import read_csv_s3,upload_file_s3,file_in_path,file_in_s3,search_new_path
 
-def import_file_s3(path,zone,x):
-    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
-    bucket_name = "project1forairflow"
-    # files_name = ["customers_rawdata.csv","products_rawdata.csv","sales_rawdata.csv"]
-    file_path = f"{path}/{zone}/2024-06-10/"
-    files_name = file_in_s3(bucket_name,file_path)
-    
-    if x in files_name:
-        dataframe = read_csv_s3(bucket_name,f"{file_path}{x}")
-    else:
-        dataframe = None
-        print(f"Cannot find the path {x} in Bucket {bucket_name}")
-    
-    return dataframe
     
 def cleansing_data():
-    customers_df = import_file_s3("rawfile","full_load","customers_rawdata.csv")
-    products_df = import_file_s3("rawfile","full_load","products_rawdata.csv")
-    sales_df = import_file_s3("rawfile","full_load","sales_rawdata.csv")
+    bucket_name = "project1forairflow"
+    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
+    customers_df = read_csv_s3(bucket_name,f"full_load/{str_datetime}/customers_rawdata.csv")
+    products_df = read_csv_s3(bucket_name,f"full_load/{str_datetime}/products_rawdata.csv")
+    sales_df = read_csv_s3(bucket_name,f"full_load/{str_datetime}/sales_rawdata.csv")
     
     #Cleansing Customers Data
     customers_df.set_index(["customer_id"])
@@ -50,13 +38,30 @@ def cleansing_data():
     sales_df.to_csv(f"{path}sales_transform_data.csv",index=False)
     combine_all_df.to_csv(f"{path}combine_all_data.csv",index=False)
 
-def upload_clean_data():
+
+def cleansing_daily_data():
+    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
+    bucket_name = "project1forairflow"
+    lasted_path_full_load = search_new_path(bucket_name,"transform/full_load/")
+    path_daily = f"rawfile/daily/{str_datetime}/"
+    
+    sales_daily = read_csv_s3(bucket_name,f"{path_daily}daily_sale.csv")
+    customers_transform = read_csv_s3(bucket_name,f"{lasted_path_full_load}/customers_transform_data.csv")
+    products_transform = read_csv_s3(bucket_name,f"{lasted_path_full_load}/products_transform_data.csv")
+    
+    combine_all_df = pd.merge(pd.merge(sales_daily,products_transform,how="left",on="product_id"),customers_transform,how="left",on="customer_id")
+    
+    path = "/opt/airflow/data/transform/"
+    combine_all_df.to_csv(f"{path}combine_all_data.csv",index=False)
+    sales_daily.to_csv(f"{path}transform_daily_sale.csv",index=False)
+
+
+def upload_clean_data(stage):
     str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
     file_location = f"/opt/airflow/data/transform/"
-    # files_name = [i for x in os.walk(file_location) for i in x[-1]]
     files_name = file_in_path(file_location)
     bucket_name = "project1forairflow"
-    object_location = f"transform/full_load/{str_datetime}/"
+    object_location = f"transform/{stage}/{str_datetime}/"
     for file in files_name:
         file_name = f"{file_location}{file}"
         object_name = f"{object_location}{file}"
@@ -64,16 +69,12 @@ def upload_clean_data():
             upload_file_s3(file_name,bucket_name,object_name)
         except Exception as e:
             print(e)
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-                print(f"the file {file_name} has been delete.")
-            else:
-                print(f"the file {file_name} does not exist.")
                 
 
-def aggregate_data():
-    all_data = import_file_s3("transform","full_load","combine_all_data.csv")
+def func_agg_data(stage):
+    bucket_name = "project1forairflow"
+    str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
+    all_data = read_csv_s3(bucket_name,f"transform/{stage}/{str_datetime}/combine_all_data.csv")
     data_income = all_data[["sale_id","sale_date","price","quantity","product_profit"]]
     data_income["sale_date"] = pd.to_datetime(data_income["sale_date"])
     
@@ -84,15 +85,15 @@ def aggregate_data():
     final_income = data_income.groupby(by="sale_date").agg({"sale_id":"count","total_income":"sum","total_profit":"sum"})
 
     final_income.to_csv(f"/opt/airflow/data/aggregate/data_income.csv",index=False)
-    # return final_income
 
-def upload_aggregate_data():
+
+def func_upload_agg(stage):
     str_datetime = str(datetime.now().strftime("%Y-%m-%d"))
     file_location = f"/opt/airflow/data/aggregate/"
     # files_name = [i for x in os.walk(file_location) for i in x[-1]]
     files_name = file_in_path(file_location)
     bucket_name = "project1forairflow"
-    object_location = f"aggregate/full_load/{str_datetime}/"
+    object_location = f"aggregate/{stage}/{str_datetime}/"
     for file in files_name:
         file_name = f"{file_location}{file}"
         object_name = f"{object_location}{file}"
@@ -100,11 +101,6 @@ def upload_aggregate_data():
             upload_file_s3(file_name,bucket_name,object_name)
         except Exception as e:
             print(e)
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-                print(f"the file {file_name} has been delete.")
-            else:
-                print(f"the file {file_name} does not exist.")
+    
 
 

@@ -29,12 +29,6 @@ def upload_full_load():
             upload_file_s3(file_name,bucket_name,object_name)
         except Exception as e:
             print(e)
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-                print(f"the file {file_name} has been delete.")
-            else:
-                print(f"the file {file_name} does not exist.")
 
         
 def download_daily_data():
@@ -59,9 +53,3 @@ def upload_daily_data():
             upload_file_s3(file_name,bucket_name,object_name)
         except Exception as e:
             print(e)
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-                print(f"the file {file_name} has been delete.")
-            else:
-                print(f"the file {file_name} does not exist.")
