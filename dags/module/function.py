@@ -26,13 +26,13 @@ def get_config(name):
                    "db_port" : db_port,
                    "db_name" : db_name,
                    "access_key_id" : access_key_id,
-                   "secret_access_key" : secret_access_key
+                   "secret_access_key": secret_access_key
                    }
     
     if name in config_data.keys():
         result = config_data[name]
     else:
-        pass
+        print(f"Don't have {name} in config")
         
     return result
 
@@ -62,8 +62,10 @@ def connector(server):
         aws_secret_access_key = secret_access_key
         )
         result = session
+        
     else:
-        pass
+        print(f"Don't have {server} connection")
+        
     return result
 
 

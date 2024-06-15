@@ -41,7 +41,7 @@ def create_data_products():
             category = val
             price = float(random.randrange(20, 80,5))
             stock_quantity = random.randrange(500,1000,50)
-            random_percent = round(random.uniform(1.10,1.20),2)
+            random_percent = round(random.uniform(1.15,1.30),2)
             product_cost = round(price/random_percent,2)
             product_profit = round(price-product_cost,2)
             data.append([product_id,product_name,category,price,stock_quantity,product_cost,product_profit])
@@ -53,13 +53,13 @@ def create_data_sales():
     sales_data = []
     sale_id = 1
     #run date start to (today - 1 )
-    start_date = datetime.date(2024,1,1)
+    start_date = datetime.date(2024,4,1)
     end_date = datetime.date.today() - datetime.timedelta(days = 1)
     dif_day = (end_date-start_date).days
     for i in range(dif_day):
         sale_date = (start_date + datetime.timedelta(days = i)).strftime("%Y-%m-%d")
         #random range customers per day
-        random_number_of_customers = random.randrange(100,200)
+        random_number_of_customers = random.randrange(150,300)
         
         for i in range(random_number_of_customers):
             customer_id = random.randrange(1,100)
@@ -93,8 +93,8 @@ def create_data_sales():
 
 def input_daily_data(new_sale_id):
     new_sales_data = []
-    date = datetime.date.today() - datetime.timedelta(days = 1)
-    random_number_of_customers = random.randrange(100,200)
+    date = datetime.date.today() - datetime.timedelta(days = 0)
+    random_number_of_customers = random.randrange(150,300)
     sale_id = int(new_sale_id)
     
     for i in range(random_number_of_customers):
