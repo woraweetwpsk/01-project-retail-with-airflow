@@ -47,6 +47,6 @@
 
 ### Dashboard
 
-![Dashboard](https://github.com/woraweetwpsk/01-project-retail-with-airflow/blob/main/images/dashboard.png?raw=true)
+![Dashboard](https://github.com/woraweetwpsk/01-project-retail-with-airflow/blob/main/images/dashboard_edit.png?raw=true)
 
 ---
