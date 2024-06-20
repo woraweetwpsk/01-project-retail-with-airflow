@@ -1,25 +1,52 @@
-# 01 - Project Retail
+## **01 - Project Retail**
+
+เป็น Project ในการสร้างฐานข้อมูลแบบ random ขึ้นมาแล้วนำมาทำโปรเจคเกี่ยวกับร้านขายของทั่วไป
+
+โดยแบ่งเป็นการทำ pipeline แบบ full load คือนำเข้าทั้งหมด และ update ข้อมูลเป็น daily
+
+แล้วจึงนำไปทำ Cleansing และ Transform ข้อมูลก่อนที่จะนำไปทำ Dashboard
+
+โดยจะวิเคราะห์เป็น รายรับต่อวัน, กำไรต่อวัน, จำนวนสินค้าที่ขายได้โดยแบ่งตามประเภท และยอดรวมการใช้เงินของลูกค้า
+
+---
+
+### Architecture
+
+![A](https://github.com/woraweetwpsk/01-project-retail-with-airflow/blob/main/images/a.png?raw=true)
+
+---
+
 ### Tool ที่ใช้ใน Project
-- Database = MySQL Server
+
+- Database, Data Warehouse = MySQL Server
 - Data Lake = AWS S3
-- Data Pipeline and Monitor = Apache Airflow
+- Data organization = Apache Airflow
 - Cleansing Data = Pandas
+- Dashboard = Amazon Quicksight
+
 ---
-### ข้อมูลที่นำมาใช้
-โปรเจคนี้เป็นการสร้างข้อมูลแบบสุ่มขึ้นมาเพื่อใช้ในการสร้าง Data Pipeline.
-โดยจะมีแบ่งสุ่มเป็น 3 รายการ คือ
-- รายการ Customer สุ่มฐานลูกค้าจำนวน 100 คน
-- รายการ Product สุ่มรายการสินค้าจำนวน 100 ชิ้น
-- รายการ Sale สุ่มรายการขายในแต่ละวัน
+
+### ER diagram
+
+![ER_diagram](https://github.com/woraweetwpsk/01-project-retail-with-airflow/assets/167957460/6e2505ca-7f32-4e69-9e7f-031cd6b5e7b0)
+
 ---
-### โดยจะมีการแบ่ง เป็น 2 ช่วง
-### ช่วงที่ 1 ETL Pipeline ข้อมูลทั้งหมด
-1. สร้างฐานข้อมูล customer ,product และ sale โดยเริ่มตั้งแต่วันที่ 2024-01-01 จนถึงก่อนวันปัจจุบัน เป็นฐานข้อมูลตั้งต้น
-2. นำเข้าข้อมูลลงใน Database
-3. นำข้อมูลจาก Database ไปสู่ Data Lake นำเข้าใน Zone : Raw File
-4. นำข้อมูลจาก Zone : Raw File มา Cleansing ข้อมูล และ Upload ไปยัง Zone : Transform
-5. นำข้อมูลไป Aggregate โดยมีข้อมูลทั้งหมดที่นำมา join กัน และข้อมูลสรุปรายรับต่อวัน, กำไรต่อวัน
-### ช่วงที่ 2 ETL Pipeline ข้อมูลใหม่รายวัน
-1. นำเข้าข้อมูลการขายต่อวันจาก Database ไปยัง Data Lake ใน Zone : Raw File
-2. Cleansing ข้อมูลแล้ว Upload ไปยัง Zone :Tramsform
-3. นำข้อมูลไป Aggregate เพื่ออัพเดทรายวัน
+
+### DAG
+- **Full load**
+  - สร้างฐานข้อมูลลงใน Database
+  - ดึงข้อมูลมาเก็บใน Bucket : raw-file
+  - Cleansing และ Transform ข้อมูล แล้วเก็บใน Bucket : transfom , final-data
+  - นำข้อมูลที่ Transform แล้ว upload ไปยัง mysql (Data Warehouse)
+- **Daily**
+  - สร้างข้อมูลยอดขายรายวันแล้วเพิ่มไปใน Database
+  - ดึงข้อมูลในวันปัจจุบันมาเก็บใน Bucket : raw-file
+  - Cleansing และ Transform ข้อมูล แล้วเก็บใน Bucket : transfom , final-data
+  - นำข้อมูลที่ Transform แล้ว updata ข้อมูลไปยัง mysql (Data Warehouse) โดยอัพเดทเฉพาะวันปัจจุบัน
+---
+
+### Dashboard
+
+![Dashboard](https://github.com/woraweetwpsk/01-project-retail-with-airflow/blob/main/images/dashboard.png?raw=true)
+
+---
